@@ -1,9 +1,11 @@
 package vista;
 
+import controlador.Comunicar;
+
 import javax.swing.*;
 import java.awt.*;
 
-public class Finestra extends JFrame {
+public class Finestra extends JFrame implements Comunicar {
     public Finestra() {
         super();
         setTitle("Encriptador");
@@ -26,8 +28,7 @@ public class Finestra extends JFrame {
         botons.add(btnDesencriptar);
         JButton btnGestor = new JButton("Gestor");
         btnGestor.addActionListener(e -> {
-            System.err.println("Gestor"
-            );
+            new GestorClaus(this);
         });
         botons.add(btnGestor);
 
@@ -36,5 +37,15 @@ public class Finestra extends JFrame {
 
 
         setVisible(true);
+    }
+
+    @Override
+    public void comunicar(String args) {
+
+    }
+
+    @Override
+    public void actualizar() {
+        repaint();
     }
 }

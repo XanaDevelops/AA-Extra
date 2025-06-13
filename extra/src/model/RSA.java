@@ -1,5 +1,8 @@
 package model;
 
+import controlador.Comunicar;
+import controlador.Main;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -8,17 +11,32 @@ import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class RSA {
+public class RSA implements Comunicar, Runnable{
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     private BigInteger P, Q, N, FN, E, D;
 
+    private int id;
     private int n;
+    private String nom;
     private PrimoProbable prim = new PrimoProbable();
 
-    public RSA(int n){
+    public RSA(int id, int n, String nom){
+        this.id = id;
         this.n = n;
+        this.nom = nom;
+    }
+
+    @Override
+    public void run(){
+        try {
+            generate();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        save();
+        Main.getInstance().finalitzar(id);
     }
 
     public void generate() throws ExecutionException, InterruptedException {
@@ -65,9 +83,9 @@ public class RSA {
         return res;
     }
 
-    public void save(String name){
+    public void save(){
         Base64.Encoder encoder = Base64.getEncoder();
-        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + name + ".pub").toPath()))) {
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + nom + ".pub").toPath()))) {
             out.write("----BEGIN PUBLIC KEY----");out.newLine();
             out.newLine();
             out.write(encoder.encodeToString(getPublicKey()[0].toByteArray()));
@@ -79,7 +97,7 @@ public class RSA {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + name + ".key").toPath()))) {
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + nom + ".key").toPath()))) {
             out.write("----BEGIN PRIVATE KEY----");
             out.newLine();out.newLine();
             out.write(encoder.encodeToString(getPrivateKey()[0].toByteArray()));
@@ -95,10 +113,11 @@ public class RSA {
 
     }
 
-    public static RSA fromFile(String pub, String priv){
-        RSA rsa = new RSA(-1);
+    public static RSA fromFile(String nom){
+        RSA rsa = new RSA(-1,-1, nom);
         Base64.Decoder decoder = Base64.getDecoder();
-        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(pub).toPath()))) {
+        //TODO: hacer concurrente
+        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(Dades.KEYSTORE_PATH + "\\" + nom + ".pub").toPath()))) {
             in.readLine();
             in.readLine();
             rsa.E = new BigInteger(decoder.decode(in.readLine()));
@@ -106,7 +125,7 @@ public class RSA {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(priv).toPath()))) {
+        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(Dades.KEYSTORE_PATH + "\\" + nom + ".key").toPath()))) {
             in.readLine();
             in.readLine();
             rsa.D = new BigInteger(decoder.decode(in.readLine()));
@@ -119,5 +138,14 @@ public class RSA {
         }
 
         return rsa;
+    }
+
+    public String getNom(){
+        return nom;
+    }
+
+    @Override
+    public void comunicar(String args) {
+
     }
 }

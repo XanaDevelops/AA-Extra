@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class RSATest {
 
     RSA rsa;
-    int N = 512;
+    int N = 256;
     @BeforeEach
     void setUp() {
-        rsa = new RSA(N);
+        rsa = new RSA(-1, N, "TEST_CLAU");
     }
 
     @Test
@@ -39,10 +39,11 @@ class RSATest {
     @Test
     public void save() throws ExecutionException, InterruptedException {
         rsa.generate();
-        rsa.save("clau");
-        RSA rsa2 = RSA.fromFile(Dades.KEYSTORE_PATH + "\\clau.pub", Dades.KEYSTORE_PATH + "\\clau.key");
+        rsa.save();
+        RSA rsa2 = RSA.fromFile("TEST_CLAU");
         assertEquals(rsa.getPublicKey()[0], rsa2.getPublicKey()[0]);
         assertEquals(rsa.getPublicKey()[1], rsa2.getPublicKey()[1]);
         assertEquals(rsa.getPrivateKey()[0], rsa2.getPrivateKey()[0]);
+        assertEquals(rsa.getNom(), rsa2.getNom());
     }
 }

@@ -68,25 +68,25 @@ public class RSA {
     public void save(){
         Base64.Encoder encoder = Base64.getEncoder();
         try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.pub").toPath()))) {
-            out.write("---- BEGIN PUBLIC KEY ----");
+            out.write("----BEGIN PUBLIC KEY----");
             out.newLine();out.newLine();
             out.write(encoder.encodeToString(getPublicKey()[0].toByteArray()));
             out.newLine();
             out.write(encoder.encodeToString(getPublicKey()[1].toByteArray()));
             out.newLine();out.newLine();
-            out.write("---- END PUBLIC KEY ----");
+            out.write("----END PUBLIC KEY----");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.key").toPath()))) {
-            out.write("---- BEGIN PRIVATE KEY ----");
+            out.write("----BEGIN PRIVATE KEY----");
             out.newLine();out.newLine();
             out.write(encoder.encodeToString(getPrivateKey()[0].toByteArray()));
             out.newLine();
             out.write(encoder.encodeToString(getPrivateKey()[1].toByteArray()));
             out.newLine();out.newLine();
-            out.write("---- END PRIVATE KEY ----");
+            out.write("----END PRIVATE KEY----");
 
         } catch (IOException e) {
             throw new RuntimeException(e);

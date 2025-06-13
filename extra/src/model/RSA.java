@@ -1,7 +1,10 @@
 package model;
 
+import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -60,5 +63,40 @@ public class RSA {
         res[0] = D;
         res[1] = N;
         return res;
+    }
+
+    public void save(){
+        Base64.Encoder encoder = Base64.getEncoder();
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.pub").toPath()))) {
+            out.write("---- BEGIN PUBLIC KEY ----");
+            out.newLine();out.newLine();
+            out.write(encoder.encodeToString(getPublicKey()[0].toByteArray()));
+            out.newLine();
+            out.write(encoder.encodeToString(getPublicKey()[1].toByteArray()));
+            out.newLine();out.newLine();
+            out.write("---- END PUBLIC KEY ----");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.key").toPath()))) {
+            out.write("---- BEGIN PRIVATE KEY ----");
+            out.newLine();out.newLine();
+            out.write(encoder.encodeToString(getPrivateKey()[0].toByteArray()));
+            out.newLine();
+            out.write(encoder.encodeToString(getPrivateKey()[1].toByteArray()));
+            out.newLine();out.newLine();
+            out.write("---- END PRIVATE KEY ----");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    public static RSA fromFile(String pub, String priv){
+
+        return null;
     }
 }

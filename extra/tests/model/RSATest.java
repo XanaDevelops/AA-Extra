@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class RSATest {
 
     RSA rsa;
-
+    int N = 256;
     @BeforeEach
     void setUp() {
-        rsa = new RSA(1000);
+        rsa = new RSA(N);
     }
 
     @Test
@@ -23,6 +23,8 @@ class RSATest {
         rsa.generate();
         System.out.println(Arrays.toString(rsa.getPublicKey()));
         System.out.println(Arrays.toString(rsa.getPrivateKey()));
+        System.out.println(rsa.getPublicKey()[0].bitLength() +", " + rsa.getPublicKey()[1].bitLength());
+        System.out.println(rsa.getPrivateKey()[0].bitLength() +", " + rsa.getPrivateKey()[1].bitLength());
     }
 
     @Test
@@ -32,5 +34,11 @@ class RSATest {
         BigInteger enc = rsa.encript(test);
         BigInteger dec = rsa.decript(enc);
         assertEquals(test, dec);
+    }
+
+    @Test
+    public void save() throws ExecutionException, InterruptedException {
+        rsa.generate();
+        rsa.save();
     }
 }

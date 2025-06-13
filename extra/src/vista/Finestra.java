@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Finestra extends JFrame implements Comunicar {
+    private GestorClaus gestorClaus;
+
     public Finestra() {
         super();
         setTitle("Encriptador");
@@ -28,7 +30,7 @@ public class Finestra extends JFrame implements Comunicar {
         botons.add(btnDesencriptar);
         JButton btnGestor = new JButton("Gestor");
         btnGestor.addActionListener(e -> {
-            new GestorClaus(this);
+            gestorClaus.setVisible(true);
         });
         botons.add(btnGestor);
 
@@ -37,6 +39,8 @@ public class Finestra extends JFrame implements Comunicar {
 
 
         setVisible(true);
+
+        gestorClaus = new GestorClaus(this);
     }
 
     @Override
@@ -47,5 +51,6 @@ public class Finestra extends JFrame implements Comunicar {
     @Override
     public void actualizar() {
         repaint();
+        gestorClaus.repaint();
     }
 }

@@ -36,6 +36,16 @@ public class Main implements Comunicar{
     }
 
     @Override
+    public void eliminarClau(int idClau){
+        if(dades.getClaus().size() <= idClau){
+            System.err.println("clau no existeix. ignorant");
+            return;
+        }
+        dades.eliminarClau(idClau);
+        actualizar();
+    }
+
+    @Override
     public void aturar(int id){
         procesos.get(id).aturar(-1);
         procesos.remove(id);

@@ -8,6 +8,9 @@ import java.awt.*;
 import java.util.Vector;
 
 public class GestorClaus extends JDialog {
+    private JList<String> llistaClaus;
+    private DefaultListModel<String> lModel;
+
     public GestorClaus(JFrame parent) {
         super(parent, "Gestor Claus", true);
         this.setLayout(new BorderLayout());
@@ -20,19 +23,20 @@ public class GestorClaus extends JDialog {
             DialogCrearClau.Resultat r = (new DialogCrearClau(this)).showDialog();
             if (r != null) {
                 Main.getInstance().crearClau(Main.getInstance().getDades().getIdCount(), r.nom, r.n);
+                lModel.addElement("Creant: " + r.nom);
             }
         });
         botons.add(btnCrear);
         JButton btnBorrar = new JButton("Borrar");
-        btnBorrar.addActionListener(e -> {});
+        btnBorrar.addActionListener(e -> {Main.getInstance().eliminarClau(llistaClaus.getSelectedIndex());});
         botons.add(btnBorrar);
 
         botons.setBorder(BorderFactory.createTitledBorder("Opcions"));
         this.add(botons, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane();
-        JList<String> llistaClaus = new JList<>();
-        DefaultListModel<String> lModel = new DefaultListModel<>();
+        llistaClaus = new JList<>();
+        lModel = new DefaultListModel<>();
         for (String x :Main.getInstance().getDades().getClaus()){
             lModel.addElement(x);
         }
@@ -43,6 +47,17 @@ public class GestorClaus extends JDialog {
 
         this.add(scroll, BorderLayout.CENTER);
 
-        setVisible(true);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+
+        lModel = new DefaultListModel<>();
+        for (String x :Main.getInstance().getDades().getClaus()){
+            lModel.addElement(x);
+        }
+        llistaClaus.setModel(lModel);
+
     }
 }

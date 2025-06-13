@@ -1,6 +1,7 @@
 package model;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +56,13 @@ public class Dades {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void eliminarClau(int idClau){
+        String aux = claus.get(idClau);
+        claus.remove(idClau);
+        (new File(KEYSTORE_PATH + "\\" + aux+".pub")).delete();
+        (new File(KEYSTORE_PATH + "\\" + aux+".key")).delete();
     }
 
     public final int getIdCount(){

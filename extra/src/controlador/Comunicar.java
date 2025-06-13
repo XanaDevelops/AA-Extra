@@ -7,7 +7,7 @@ public interface Comunicar {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    default void eliminarClau(int id, int idClau){
+    default void eliminarClau(int idClau){
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -65,11 +65,11 @@ public class RSA {
         return res;
     }
 
-    public void save(){
+    public void save(String name){
         Base64.Encoder encoder = Base64.getEncoder();
-        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.pub").toPath()))) {
-            out.write("----BEGIN PUBLIC KEY----");
-            out.newLine();out.newLine();
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + name + ".pub").toPath()))) {
+            out.write("----BEGIN PUBLIC KEY----");out.newLine();
+            out.newLine();
             out.write(encoder.encodeToString(getPublicKey()[0].toByteArray()));
             out.newLine();
             out.write(encoder.encodeToString(getPublicKey()[1].toByteArray()));
@@ -79,7 +79,7 @@ public class RSA {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\clau.key").toPath()))) {
+        try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + name + ".key").toPath()))) {
             out.write("----BEGIN PRIVATE KEY----");
             out.newLine();out.newLine();
             out.write(encoder.encodeToString(getPrivateKey()[0].toByteArray()));
@@ -96,7 +96,28 @@ public class RSA {
     }
 
     public static RSA fromFile(String pub, String priv){
+        RSA rsa = new RSA(-1);
+        Base64.Decoder decoder = Base64.getDecoder();
+        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(pub).toPath()))) {
+            in.readLine();
+            in.readLine();
+            rsa.E = new BigInteger(decoder.decode(in.readLine()));
+            rsa.N = new BigInteger(decoder.decode(in.readLine()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (BufferedReader in = new BufferedReader(Files.newBufferedReader(new File(priv).toPath()))) {
+            in.readLine();
+            in.readLine();
+            rsa.D = new BigInteger(decoder.decode(in.readLine()));
+            BigInteger aux = new BigInteger(decoder.decode(in.readLine()));
+            if (aux.compareTo(rsa.N) != 0){
+                throw new RuntimeException("N no es igual!");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        return null;
+        return rsa;
     }
 }

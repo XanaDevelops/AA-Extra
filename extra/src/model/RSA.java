@@ -6,6 +6,8 @@ import controlador.Main;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -144,8 +146,47 @@ public class RSA implements Comunicar, Runnable{
         return nom;
     }
 
+    public int keyLength(){
+        return N.toString().length();
+    }
+
     @Override
     public void comunicar(String args) {
 
+    }
+
+    public static String getChecksum(File file) throws IOException, NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
+            }
+        }
+        byte[] hash = digest.digest();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hash) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    public static byte[] getChecksumByte(File file) throws IOException, NoSuchAlgorithmException {
+        String checksum = RSA.getChecksum(file);
+        byte[] checksumB = new byte[checksum.length()/2];
+        for (int i = 0; i < checksum.length() / 2; i++) {
+            checksumB[i] = (byte) (short) Short.parseShort(checksum.substring(i * 2, i * 2 + 2), 16);
+        }
+
+        return checksumB;
+    }
+
+    public String getChecksum() throws IOException, NoSuchAlgorithmException {
+        return RSA.getChecksum(new File(Dades.KEYSTORE_PATH+"/"+this.nom+".key"));
+    }
+
+    public byte[] getChecksumByte() throws IOException, NoSuchAlgorithmException {
+        return RSA.getChecksumByte(new File(Dades.KEYSTORE_PATH+"/"+this.nom+".key"));
     }
 }

@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Dades {
 
-    public static final Path KEYSTORE_PATH = Path.of(System.getenv("localappdata")+"\\KEYSTORE_PRACTICA_AA\\");
+    public static final Path KEYSTORE_PATH = Path.of(System.getenv("localappdata")+"/KEYSTORE_PRACTICA_AA/");
 
     private static int idCount = 0;
 

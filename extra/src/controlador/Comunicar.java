@@ -1,5 +1,7 @@
 package controlador;
 
+import model.CryptHeader;
+
 public interface Comunicar {
     void comunicar(String args);
 
@@ -14,7 +16,7 @@ public interface Comunicar {
     default void encriptar(int id, String filePath, String outPath, boolean comprimir){
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    default void desencriptar(int id, String filePath, String outPath){
+    default void desencriptar(int id, String filePath, String outPath) throws CryptHeader.InvalidKeyHeader {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

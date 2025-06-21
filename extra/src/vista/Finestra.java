@@ -1,9 +1,15 @@
 package vista;
 
 import controlador.Comunicar;
+import controlador.Main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class Finestra extends JFrame implements Comunicar {
     private GestorClaus gestorClaus;
@@ -13,19 +19,21 @@ public class Finestra extends JFrame implements Comunicar {
         setTitle("Encriptador");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setSize(600, 800);
+        setSize(400, 600);
         setLocationRelativeTo(null);
 
         JPanel botons = new JPanel();
 
         JButton btnEncriptar = new JButton("Encriptar");
         btnEncriptar.addActionListener(e -> {
-            System.err.println("encriptar");
+            OperModal m = new OperModal(this, true);
+            m.setVisible(true);
         });
         botons.add(btnEncriptar);
         JButton btnDesencriptar = new JButton("Desencriptar");
         btnDesencriptar.addActionListener(e -> {
-            System.err.println("desencriptar");
+            OperModal m = new OperModal(this, false);
+            m.setVisible(true);
         });
         botons.add(btnDesencriptar);
         JButton btnGestor = new JButton("Gestor");
@@ -37,6 +45,85 @@ public class Finestra extends JFrame implements Comunicar {
         botons.setBorder(BorderFactory.createTitledBorder("Opcions"));
         this.add(botons, BorderLayout.NORTH);
 
+        JPanel arrastrarPanel = new JPanel();
+        arrastrarPanel.setLayout(new BorderLayout());
+
+        JPanel panelEncriptador = new JPanel(new BorderLayout());
+        JLabel lblEncriptador = new JLabel("Arrosegar aqui per encriptar");
+        lblEncriptador.setVerticalAlignment(SwingConstants.CENTER);
+        panelEncriptador.add(lblEncriptador, BorderLayout.CENTER);
+        panelEncriptador.setTransferHandler(new TransferHandler(){
+            @Override
+            public boolean canImport(TransferHandler.TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+            @SuppressWarnings("unchecked")
+            @Override
+            public boolean importData(TransferHandler.TransferSupport support) {
+                if(!canImport(support)) {
+                    return false;
+                }
+                try{
+                    List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if(!files.isEmpty()) {
+                        File file = files.getFirst();
+                        OperModal m = new OperModal(Main.getInstance().getFinestra(), true);
+                        m.setOriFile(file.getAbsolutePath());
+                        m.setVisible(true);
+                        return true;
+                    }
+                } catch (IOException | UnsupportedFlavorException e) {
+                    throw new RuntimeException(e);
+                }
+                return false;
+            }
+        });
+        panelEncriptador.setBorder(BorderFactory.createTitledBorder("Encriptar"));
+
+        JPanel panelDesencriptador = new JPanel(new BorderLayout());
+        JLabel lblDesencriptador = new JLabel("Arrosegar aqui per desencriptar");
+        lblDesencriptador.setVerticalAlignment(SwingConstants.CENTER);
+        panelDesencriptador.add(lblDesencriptador, BorderLayout.CENTER);
+        panelDesencriptador.setTransferHandler(new TransferHandler(){
+            @Override
+            public boolean canImport(TransferHandler.TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+            @SuppressWarnings("unchecked")
+            @Override
+            public boolean importData(TransferHandler.TransferSupport support) {
+                if(!canImport(support)) {
+                    return false;
+                }
+                try{
+                    List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if(!files.isEmpty()) {
+                        File file = files.getFirst();
+                        OperModal m = new OperModal(Main.getInstance().getFinestra(), false);
+                        m.setOriFile(file.getAbsolutePath());
+                        m.setVisible(true);
+                        return true;
+                    }
+                } catch (IOException | UnsupportedFlavorException e) {
+                    throw new RuntimeException(e);
+                }
+                return false;
+            }
+        });
+        panelDesencriptador.setBorder(BorderFactory.createTitledBorder("Desencriptar"));
+
+
+        arrastrarPanel.add(panelEncriptador, BorderLayout.WEST);
+        arrastrarPanel.add(panelDesencriptador, BorderLayout.EAST);
+
+        this.add(arrastrarPanel, BorderLayout.CENTER);
+
+        JPanel barresCarrega = new JPanel();
+        barresCarrega.setLayout(new BoxLayout(barresCarrega, BoxLayout.Y_AXIS));
+        barresCarrega.setBorder(BorderFactory.createTitledBorder("Procesos"));
+        JScrollPane scrollPane = new JScrollPane(barresCarrega);
+        scrollPane.setPreferredSize(new Dimension(600, 400));
+        this.add(scrollPane, BorderLayout.SOUTH);
 
         setVisible(true);
 

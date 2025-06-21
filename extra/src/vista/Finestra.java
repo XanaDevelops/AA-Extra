@@ -183,6 +183,11 @@ public class Finestra extends JFrame implements Comunicar {
         gestorClaus.repaint();
     }
 
+    @Override
+    public void error(String msg){
+        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     Timer timer = new Timer(1000/30, e -> {
         for(Map.Entry<Integer, BarraCarrega> entry: barres.entrySet()){
             entry.getValue().tick();

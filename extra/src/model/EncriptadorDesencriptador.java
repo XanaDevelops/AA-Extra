@@ -32,8 +32,14 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
     private int id;
 
     public EncriptadorDesencriptador(int id, String keyName) {
-        rsa = RSA.fromFile(keyName);
-        nBytes = (rsa.keyLength()+2)/2;
+        if(keyName == null){
+            rsa = null;
+            nBytes = -1;
+        }else {
+            rsa = RSA.fromFile(keyName);
+            nBytes = (rsa.keyLength()+2)/2;
+        }
+
         this.id = id;
         Main.getInstance().getFinestra().arrancar(id);
     }
@@ -150,6 +156,20 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                 d.decompressFile();
                 try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream(temp))){
                     fileIn = bis2.readAllBytes();
+                }
+                if(rsa == null){
+                    boolean ok = false;
+                    for(String k: Main.getInstance().getDades().getClaus()){
+                        rsa = RSA.fromFile(k);
+                        nBytes = (rsa.keyLength()+2)/2;
+                        if(CryptHeader.checkHeader(rsa, fileIn)){
+                            ok = true;
+                            break;
+                        }
+                    }
+                    if(!ok){
+                        throw new CryptHeader.InvalidKeyHeader();
+                    }
                 }
             }
 

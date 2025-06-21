@@ -42,4 +42,8 @@ public interface Comunicar {
     default void arrancar(int id){
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    default void error(String msg){
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

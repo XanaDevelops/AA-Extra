@@ -27,6 +27,9 @@ public class CryptHeader {
     }
 
     public static boolean checkHeader(RSA rsa, byte[] header){
+        if(rsa == null){
+            return false;
+        }
         try {
             byte[] checksum = rsa.getChecksumByte();
             for (int i = 0; i < checksum.length; i++) {

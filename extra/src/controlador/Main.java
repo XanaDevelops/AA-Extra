@@ -78,18 +78,7 @@ public class Main implements Comunicar{
         EncriptadorDesencriptador ed = null;
         boolean okAuto = false;
         if(isAuto){
-            for(String key: dades.getClaus()){
-                ed = new EncriptadorDesencriptador(id, key);
-                if(ed.checkKey(key, filePath)){
-                    okAuto = true;
-                    break;
-                }
-            }
-            if(!okAuto){
-                System.err.println("no claus valides");
-                finestra.finalitzar(id);
-                return;
-            }
+            ed = new EncriptadorDesencriptador(id, null);
 
         }else{
             ed = new EncriptadorDesencriptador(id, kName);
@@ -100,6 +89,8 @@ public class Main implements Comunicar{
                 finalEd.desencriptar(id, filePath, outPath);
             } catch (CryptHeader.InvalidKeyHeader e) {
                 System.err.println(e);
+                finestra.error("Cap clau és valida!");
+                finestra.finalitzar(id);
             }
         });
 

@@ -41,6 +41,10 @@ public class CryptHeader {
 
     }
 
+    public static boolean isCompressed(byte[] file){
+        return file[compressIndex] == (byte) 0xFF;
+    }
+
 
     public static byte[] createHeader(RSA rsa, boolean isCompressed) {
         try {

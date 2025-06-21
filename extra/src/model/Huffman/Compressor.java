@@ -1,121 +1,8 @@
-//
-//package model;
-//
-//import java.io.*;
-//import java.nio.charset.StandardCharsets;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.util.*;
-//import java.util.concurrent.Executors;
-//import java.util.concurrent.ThreadPoolExecutor;
-//
-//public class Compressor {
-//    private final Huffman huffman;
-//    private final String input;
-//    private final String folderOutput;
-//
-//    Dades data;
-//    private static final int N_THREADS = 8;
-//    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(N_THREADS);
-//
-//    public Compressor(Huffman huffman, Dades data, String input, String folderOutput) {
-//        this.huffman = huffman;
-//        this.input = input;
-//        this.data = data;
-//        this.folderOutput = folderOutput;
-//    }
-//
-//    /**
-//     * Comprimeix el fitxer d'entrada.
-//     * La capçalera té la següent forma
-//     * (Byte) --> nombre de caracters únics de l'arxiu
-//     * Conjunt de bytes (Simbol, longitud) --> forma canònica de la codificació de huffman
-//     * A baix de la capçalera s'escriu el contingut codificat de huffman
-//     *
-//     * @throws IOException
-//     */
-//
-//    public void compressFile() throws IOException {
-//        Map<Byte, String> table = huffman.getTable();
-//        //calcular la longitud de les codificaciones de cada byte
-//        int[] codeLengths = new int[Huffman.BITSIZE];
-//        int totalUnicSymbols = 0;
-//        List<Integer> symbols = new ArrayList<>();
-//        for (Map.Entry<Byte, String> e : table.entrySet()) {
-//            int sym = e.getKey() & 0xFF; //byte positiu
-//            codeLengths[sym] = e.getValue().length();
-//            symbols.add(sym);
-//            totalUnicSymbols++;
-//        }
-//        //generar codi canònic a partir les longituds dels símbols
-//        byte[][] canonCodes = Huffman.generateCanonicalCodes(codeLengths, symbols);
-////        byte [] magicNumbers = data.getExtensioComprimit().getMagicBytes();
-//
-//        //afegir la signatura de l'extensió manualment
-//        String fileName = input.split("/")[input.split("/").length - 1];
-//        fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-//        try (OutputStream fos = Files.newOutputStream(Path.of(folderOutput+ "Compressed "+fileName+".txt"));
-//             BufferedOutputStream bufOut = new BufferedOutputStream(fos);
-//             DataOutputStream dos = new DataOutputStream(bufOut);
-//             BitOutputStream bitOut = new BitOutputStream(bufOut)) {
-//
-//            //guardar l'extensió original de l'arxiu
-////            dos.writeShort(magicNumbers.length);
-////            dos.write(magicNumbers);
-////
-//            Path inputPath = Path.of(input);
-////            String[] extension = input.split("\\.", 2);
-////            extension[1] = "."+ extension[1];
-////            byte[] extensionBytes = extension[1].getBytes(StandardCharsets.UTF_8);
-////            //tamany de l'extensió
-////            dos.writeShort(extensionBytes.length);
-////            //l'extensió en sí
-////            dos.write(extensionBytes);
-//
-//            dos.writeInt(totalUnicSymbols);
-//            // llista de (simbol, longitud)
-//            for (int symbol = 0; symbol < Huffman.BITSIZE; symbol++) {
-//                int len = codeLengths[symbol];
-//                if (len > 0) {
-//                    dos.writeByte(symbol);
-//                    dos.writeByte(len);
-//                }
-//            }
-//
-//            int originalBytes = (int) Files.size(inputPath);
-//            dos.writeInt(originalBytes);
-//            dos.flush();
-//
-//
-//
-//            //Escriure la codificació del contingut de l'arxiu d'entrada
-//            try (InputStream fis = new BufferedInputStream(Files.newInputStream(inputPath))) {
-//                int b;
-//                while ((b = fis.read()) != -1) {
-//
-//                        byte[] codeBits = canonCodes[b & 0xFF];
-//                        if (codeBits !=null) {
-//                        for (byte codeBit : codeBits) {
-//                            bitOut.writeBit(codeBit == 1);
-//                        }
-//                    }
-//                }
-//            }
-//            bitOut.flush();
-//
-//        }
-//    }
-//
-//}
-//
-
-
 package model.Huffman;
 
-import controlador.Comunicar;
-import controlador.Main;
+
 import model.BitsManagement.BitOutputStream;
-import model.Dades;
+
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -126,20 +13,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Compressor implements Comunicar, Runnable {
+public class Compressor {
     private final Huffman huffman;
     private final String inputPath;
     private final String outputFolder;
+
+    private File outFile;
+
     private int id;
-    Dades data;
 
     public Compressor(int id, String inputPath, String outputFolder) {
-        this(new Huffman(inputPath), Main.getInstance().getDades(), inputPath, outputFolder);
+        this(new Huffman(inputPath),  inputPath, outputFolder);
         this.id = id;
     }
-    public Compressor(Huffman huffman, Dades data, String inputPath, String outputFolder) {
+    public Compressor(Huffman huffman, String inputPath, String outputFolder) {
         this.huffman = huffman;
-        this.data = data;
+
         this.inputPath = inputPath;
         this.outputFolder = outputFolder;
 
@@ -182,8 +71,9 @@ public class Compressor implements Comunicar, Runnable {
         String fileName = Path.of(inputPath).getFileName().toString();
 
         fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-        System.out.println("File: " +outputFolder +"\\"+ fileName + HuffHeader.EXTENSIO);
-        try (OutputStream fos = Files.newOutputStream(Path.of(outputFolder +"\\"+ fileName + HuffHeader.EXTENSIO));
+        outFile = new File(outputFolder + "/" + fileName + HuffHeader.EXTENSIO);
+        System.out.println("File: " + outFile);
+        try (OutputStream fos = Files.newOutputStream(Path.of(outFile.getAbsolutePath()));
              BufferedOutputStream bufOut = new BufferedOutputStream(fos);
              DataOutputStream dos = new DataOutputStream(bufOut);
              BitOutputStream bitOut = new BitOutputStream(bufOut)) {
@@ -241,26 +131,11 @@ public class Compressor implements Comunicar, Runnable {
 //        data.addTempsCompressio(time, fileName, huffman.getTipusCua);
     }
 
-
-    /**
-     * Envia un missatge
-     *
-     * @param s El missatge
-     */
-    @Override
-    public void comunicar(String s) {
-
+    public File getFileOut() {
+        return outFile;
     }
 
-    /**
-     * Runs this operation.
-     */
-    @Override
-    public void run() {
-        try {
-            this.compressFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
+
+
 }

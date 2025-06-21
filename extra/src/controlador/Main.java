@@ -128,6 +128,9 @@ public class Main implements Comunicar{
         return dades;
     }
     public final Finestra getFinestra(){
+        if(finestra == null){
+            finestra = new Finestra();
+        }
         return finestra;
     }
 }

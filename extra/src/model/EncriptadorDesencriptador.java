@@ -2,9 +2,13 @@ package model;
 
 import controlador.Comunicar;
 import controlador.Main;
+import model.Huffman.Compressor;
+import model.Huffman.Decompressor;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -45,23 +49,30 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
     @Override
     public void encriptar(int id, String filePath, String outPath, boolean comprimir) {
 
-        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))){
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))){
             byte[] fileIn = bis.readAllBytes();
 
             if(comprimir) {
-                System.err.println("TODO: comprimir");
+                Path temp = Files.createTempDirectory("huff_temp");
+                Compressor c = new Compressor(id, filePath, temp.toString());
+                c.compressFile();
+                try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream((c.getFileOut())))){
+                    fileIn = bis2.readAllBytes();
+                }
             }
 
             int _step = fileIn.length / N_THREADS;
             final int step = _step + 1 - (_step % N_THREADS);
             for (int i = 0; i < N_THREADS -1; i++) {
                 final int j = i;
+                byte[] finalFileIn = fileIn;
                 addConcurrent(() -> {
-                    encriptar(fileIn, j, j * step, (j+1) * step);
+                    encriptar(finalFileIn, j, j * step, (j+1) * step);
                 });
             }
+            byte[] finalFileIn1 = fileIn;
             addConcurrent(() -> {
-                encriptar(fileIn, N_THREADS-1, (N_THREADS-1) * step, fileIn.length);
+                encriptar(finalFileIn1, N_THREADS-1, (N_THREADS-1) * step, finalFileIn1.length);
             });
 
             waitAll();
@@ -140,12 +151,26 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
 
             waitAll();
 
+            String oriOutPath = outPath;
+            if(CryptHeader.isCompressed(fileIn)) {
+                File temp = File.createTempFile("huff_temp", null);
+                //temp.deleteOnExit();
+                outPath = temp.getAbsolutePath();
+                System.out.println("temp ED dec: " + temp.getAbsolutePath());
+            }
+
+
             try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(outPath)))){
                 for(ArrayList<Byte> chunk : fileChunksOut) {
                     for(byte b : chunk) {
                         bos.write(b);
                     }
                 }
+            }
+
+            if(CryptHeader.isCompressed(fileIn)) {
+                Decompressor d = new Decompressor(outPath, oriOutPath);
+                d.decompressFile();
             }
 
             Main.getInstance().finalitzar(id);

@@ -114,10 +114,10 @@ import java.util.*;
 public class Decompressor {
 
     private final String src;
-    private final String outputFolder;
-    public Decompressor(String src, String outputFolder) {
+    private final String outputFile;
+    public Decompressor(String src, String outputFile) {
         this.src = src;
-        this.outputFolder = outputFolder;
+        this.outputFile = outputFile;
     }
 
     private static class DecodeNode {
@@ -168,12 +168,14 @@ public class Decompressor {
 
             Map<Long, byte[]> canonCodes = Huffman.generateCanonicalCodes(codeLengths, symbols);
             DecodeNode root = buildDecodingTree(canonCodes);
-            String fileName = src.split("/")[src.split("/").length - 1];
+            String fileName = new File(outputFile).getName();
             fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-            System.out.println("fileName = " + fileName);
+            //System.out.println("Descomprimir a fileName = " + fileName+ "."+ extension);
+            String name = new File(outputFile).getParent() +"/"+ fileName + "." + extension;
+            System.out.println("dec : "+name);
             try (BitInputStream bitIn = new BitInputStream(fis);
                  OutputStream fosOut = new BufferedOutputStream(
-                         new FileOutputStream(outputFolder+ fileName+ "."+ extension))) {
+                         new FileOutputStream(name))) {
                 int written = 0;
                 while (written < originalBytes) {
                     DecodeNode node = root;

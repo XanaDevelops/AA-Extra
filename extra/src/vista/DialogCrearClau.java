@@ -24,11 +24,21 @@ public class DialogCrearClau extends JDialog {
 
         JPanel dades = new JPanel();
         dades.setLayout(new BoxLayout(dades, BoxLayout.Y_AXIS));
+
+        JPanel panelN = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel labelN = new JLabel("N: ");
+        panelN.add(labelN);
         spinner = new JSpinner(new SpinnerNumberModel(1024, 1, Integer.MAX_VALUE, 1));
         ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().setColumns(10);
-        dades.add(spinner);
-        textField = new JTextField();
-        dades.add(textField);
+        panelN.add(spinner);
+        dades.add(panelN);
+
+        JPanel panelNom = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel labelNom = new JLabel("Nom: ");
+        panelNom.add(labelNom);
+        textField = new JTextField(10);
+        panelNom.add(textField);
+        dades.add(panelNom);
 
         this.add(dades, BorderLayout.NORTH);
 

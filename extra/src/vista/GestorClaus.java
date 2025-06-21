@@ -31,6 +31,10 @@ public class GestorClaus extends JDialog {
         btnBorrar.addActionListener(e -> {Main.getInstance().eliminarClau(llistaClaus.getSelectedIndex());});
         botons.add(btnBorrar);
 
+        JButton btnInfo = new JButton("Info");
+        btnInfo.addActionListener(e -> {new InfoClauModal(this, llistaClaus.getSelectedValue());});
+        botons.add(btnInfo);
+
         botons.setBorder(BorderFactory.createTitledBorder("Opcions"));
         this.add(botons, BorderLayout.NORTH);
 

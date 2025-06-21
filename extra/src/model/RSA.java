@@ -24,6 +24,9 @@ public class RSA implements Comunicar, Runnable{
     private String nom;
     private PrimoProbable prim = new PrimoProbable();
 
+    private boolean aturar = false;
+
+
     public RSA(int id, int n, String nom){
         this.id = id;
         this.n = n;
@@ -32,6 +35,7 @@ public class RSA implements Comunicar, Runnable{
 
     @Override
     public void run(){
+        Main.getInstance().getFinestra().arrancar(id);
         try {
             generate();
         } catch (ExecutionException | InterruptedException e) {
@@ -42,6 +46,7 @@ public class RSA implements Comunicar, Runnable{
     }
 
     public void generate() throws ExecutionException, InterruptedException {
+        Main.getInstance().getFinestra().arrancar(id);
         List<Future<BigInteger>> calls = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             calls.add(executor.submit(() -> prim.otroProbablePrimo(new BigInteger("1" + "0".repeat(n)))));
@@ -49,6 +54,11 @@ public class RSA implements Comunicar, Runnable{
         P = calls.get(0).get();
         Q = calls.get(1).get();
         E = calls.get(2).get();
+
+        if(aturar){
+            Main.getInstance().getFinestra().finalitzar(id);
+            return;
+        }
 
         calls.add(executor.submit(() -> P.multiply(Q)));
         calls.add(executor.submit(() -> P.add(new BigInteger("-1")).multiply(Q.add(new BigInteger("-1")))));
@@ -60,6 +70,8 @@ public class RSA implements Comunicar, Runnable{
         }
 
         D = E.modInverse(FN);
+
+        Main.getInstance().getFinestra().finalitzar(id);
 
     }
 
@@ -86,6 +98,9 @@ public class RSA implements Comunicar, Runnable{
     }
 
     public void save(){
+        if(aturar){
+            return;
+        }
         Base64.Encoder encoder = Base64.getEncoder();
         try (BufferedWriter out = new BufferedWriter(Files.newBufferedWriter(new File(Dades.KEYSTORE_PATH + "\\" + nom + ".pub").toPath()))) {
             out.write("----BEGIN PUBLIC KEY----");out.newLine();
@@ -153,6 +168,11 @@ public class RSA implements Comunicar, Runnable{
     @Override
     public void comunicar(String args) {
 
+    }
+
+    @Override
+    public void aturar(int id){
+        aturar = true;
     }
 
     public static String getChecksum(File file) throws IOException, NoSuchAlgorithmException {

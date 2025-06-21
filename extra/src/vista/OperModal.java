@@ -13,13 +13,13 @@ public class OperModal extends JDialog {
     boolean isEncrypt = true;
 
     private JTextField oriFileField;
-    private JButton browseExistingButton;
+    private JButton browseFileButton;
 
     private JTextField saveFileField;
-    private JButton browseArbitraryButton;
+    private JButton browseSaveButton;
 
-    private JComboBox<String> comboBox;
-    private JCheckBox checkBox;
+    private JComboBox<String> keyCombo;
+    private JCheckBox compriCheckB;
 
     private JButton okButton;
     private JButton cancelButton;
@@ -35,21 +35,21 @@ public class OperModal extends JDialog {
         this.dades = Main.getInstance().getDades();
 
         oriFileField = new JTextField(25);
-        browseExistingButton = new JButton("...");
-        browseExistingButton.addActionListener(e -> onBrowseOrig());
+        browseFileButton = new JButton("...");
+        browseFileButton.addActionListener(e -> onBrowseOrig());
 
         saveFileField = new JTextField(25);
-        browseArbitraryButton = new JButton("...");
-        browseArbitraryButton.addActionListener(e -> onBrowseSave());
+        browseSaveButton = new JButton("...");
+        browseSaveButton.addActionListener(e -> onBrowseSave());
 
-        comboBox = new JComboBox<>();
+        keyCombo = new JComboBox<>();
         if(!isEncrypt){
-            comboBox.addItem("Automàtic");
+            keyCombo.addItem("Automàtic");
         }
         for(String s: dades.getClaus()){
-            comboBox.addItem(s);
+            keyCombo.addItem(s);
         }
-        checkBox = new JCheckBox("Comprimir");
+        compriCheckB = new JCheckBox("Comprimir");
 
         okButton = new JButton("OK");
         okButton.addActionListener(e -> onOK());
@@ -67,7 +67,7 @@ public class OperModal extends JDialog {
         gbc.gridx = 1;
         filePanel.add(oriFileField, gbc);
         gbc.gridx = 2;
-        filePanel.add(browseExistingButton, gbc);
+        filePanel.add(browseFileButton, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -75,13 +75,13 @@ public class OperModal extends JDialog {
         gbc.gridx = 1;
         filePanel.add(saveFileField, gbc);
         gbc.gridx = 2;
-        filePanel.add(browseArbitraryButton, gbc);
+        filePanel.add(browseSaveButton, gbc);
 
         JPanel optionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         optionsPanel.add(new JLabel("Claus:"));
-        optionsPanel.add(comboBox);
+        optionsPanel.add(keyCombo);
         if (isEncrypt) {
-            optionsPanel.add(checkBox);
+            optionsPanel.add(compriCheckB);
         }
 
 
@@ -152,6 +152,12 @@ public class OperModal extends JDialog {
             return;
         }
         confirmed = true;
+
+        if(isEncrypt){
+            Main.getInstance().encriptar(dades.getIdCount(), (String) keyCombo.getSelectedItem(), path, saveFileField.getText().trim(), compriCheckB.isSelected());
+        }else{
+            Main.getInstance().desencriptar(dades.getIdCount(), (String) keyCombo.getSelectedItem(), keyCombo.getSelectedIndex() == 0, path, saveFileField.getText().trim());
+        }
         setVisible(false);
     }
 
@@ -164,30 +170,10 @@ public class OperModal extends JDialog {
         return confirmed;
     }
 
-    public File getOriFile() {
-        String path = oriFileField.getText().trim();
-        return path.isEmpty() ? null : new File(path);
-    }
+
     public void setOriFile(String path) {
         oriFileField.setText(path);
     }
 
-    public File getSaveFile() {
-        String path = saveFileField.getText().trim();
-        return path.isEmpty() ? null : new File(path);
-    }
 
-    public String getSelectedOption() {
-        return (String) comboBox.getSelectedItem();
-    }
-
-    public boolean isChecked() {
-        return checkBox.isSelected();
-    }
-
-    private void loadEncript(){
-
-    }
-
-    private void loadDecript(){}
 }

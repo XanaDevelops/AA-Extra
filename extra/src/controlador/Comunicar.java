@@ -23,7 +23,7 @@ public interface Comunicar {
     default void encriptar(int id, String kName, String filePath, String outPath, boolean comprimir){
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    default void desencriptar(int id, String kName, boolean isAuto, String filePath, String outPath) throws CryptHeader.InvalidKeyHeader {
+    default void desencriptar(int id, String kName, boolean isAuto, String filePath, String outPath) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -36,6 +36,10 @@ public interface Comunicar {
     }
 
     default void actualizar(){
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    default void arrancar(int id){
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

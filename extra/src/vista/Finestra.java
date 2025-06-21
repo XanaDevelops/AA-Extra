@@ -9,10 +9,18 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Finestra extends JFrame implements Comunicar {
     private GestorClaus gestorClaus;
+
+    private Map<Integer, BarraCarrega> barres = new ConcurrentHashMap<>(new TreeMap<>());
+
+    private JPanel barresCarrega;
 
     public Finestra() {
         super();
@@ -118,7 +126,7 @@ public class Finestra extends JFrame implements Comunicar {
 
         this.add(arrastrarPanel, BorderLayout.CENTER);
 
-        JPanel barresCarrega = new JPanel();
+        barresCarrega = new JPanel();
         barresCarrega.setLayout(new BoxLayout(barresCarrega, BoxLayout.Y_AXIS));
         barresCarrega.setBorder(BorderFactory.createTitledBorder("Procesos"));
         JScrollPane scrollPane = new JScrollPane(barresCarrega);
@@ -128,6 +136,7 @@ public class Finestra extends JFrame implements Comunicar {
         setVisible(true);
 
         gestorClaus = new GestorClaus(this);
+        timer.start();
     }
 
     @Override
@@ -136,8 +145,47 @@ public class Finestra extends JFrame implements Comunicar {
     }
 
     @Override
+    public void arrancar(int id){
+        if(barres.containsKey(id)){
+            barres.get(id).iniciar();
+        }else{
+            BarraCarrega b = new BarraCarrega("Proces", id);
+            barres.put(id, b);
+            barresCarrega.add(b);
+        }
+
+        repaint();
+        revalidate();
+    }
+
+    @Override
+    public void aturar(int id){
+        BarraCarrega b = barres.remove(id);
+        if(b!=null){
+            barresCarrega.remove(b);
+        }
+        repaint();
+        revalidate();
+
+    }
+
+    @Override
+    public void finalitzar(int id){
+        BarraCarrega b = barres.get(id);
+        if(b != null){
+            b.end();
+        }
+    }
+
+    @Override
     public void actualizar() {
         repaint();
         gestorClaus.repaint();
     }
+
+    Timer timer = new Timer(1000/30, e -> {
+        for(Map.Entry<Integer, BarraCarrega> entry: barres.entrySet()){
+            entry.getValue().tick();
+        }
+    });
 }

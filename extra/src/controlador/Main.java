@@ -1,6 +1,8 @@
 package controlador;
 
+import model.CryptHeader;
 import model.Dades;
+import model.EncriptadorDesencriptador;
 import model.RSA;
 import vista.Finestra;
 
@@ -17,7 +19,7 @@ public class Main implements Comunicar{
 
     private final TreeMap<Integer, Comunicar> procesos = new TreeMap<>();
 
-    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
 
     public static void main(String[] args) {
         if (instance == null) {
@@ -61,7 +63,51 @@ public class Main implements Comunicar{
     @Override
     public void finalitzar(int id){
         procesos.remove(id);
+        finestra.finalitzar(id);
         actualizar();
+    }
+
+    @Override
+    public void encriptar(int id, String kName, String filePath, String outPath, boolean comprimir) {
+        EncriptadorDesencriptador ed = new EncriptadorDesencriptador(id, kName);
+        executar(id, ed, () -> {ed.encriptar(id, filePath, outPath, comprimir);});
+    }
+
+    @Override
+    public void desencriptar(int id, String kName, boolean isAuto, String filePath, String outPath) {
+        EncriptadorDesencriptador ed = null;
+        boolean okAuto = false;
+        if(isAuto){
+            for(String key: dades.getClaus()){
+                ed = new EncriptadorDesencriptador(id, key);
+                if(ed.checkKey(key, filePath)){
+                    okAuto = true;
+                    break;
+                }
+            }
+            if(!okAuto){
+                System.err.println("no claus valides");
+                finestra.finalitzar(id);
+                return;
+            }
+
+        }else{
+            ed = new EncriptadorDesencriptador(id, kName);
+        }
+        EncriptadorDesencriptador finalEd = ed;
+        executar(id, ed, () -> {
+            try {
+                finalEd.desencriptar(id, filePath, outPath);
+            } catch (CryptHeader.InvalidKeyHeader e) {
+                System.err.println(e);
+            }
+        });
+
+    }
+
+    private void executar(int id, Comunicar c, Runnable r){
+        procesos.put(id, c);
+        executor.execute(r);
     }
 
     private void executar(int id, Runnable r){

@@ -11,7 +11,7 @@ public class BarraCarrega extends JPanel {
     private JProgressBar progressBar;
     private JButton cancel;
     private int id;
-    private long time;
+    private long time = 0;
 
     private boolean hasEnd = false;
     private boolean actiu = false;
@@ -54,6 +54,7 @@ public class BarraCarrega extends JPanel {
         cancel.addActionListener(e -> {
             System.err.println("Cancel" + id);
             Main.getInstance().aturar(id);
+            Main.getInstance().getFinestra().aturar(id);
         });
         this.add(cancel, BorderLayout.EAST);
         this.setVisible(true);

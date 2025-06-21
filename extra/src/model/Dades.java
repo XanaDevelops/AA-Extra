@@ -65,7 +65,7 @@ public class Dades {
         (new File(KEYSTORE_PATH + "\\" + aux+".key")).delete();
     }
 
-    public final int getIdCount(){
+    synchronized public final int getIdCount(){
         return idCount++;
     }
 

@@ -1,6 +1,7 @@
 package model;
 
 import controlador.Comunicar;
+import controlador.Main;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -22,11 +23,15 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
 
     int nBytes;
 
+    private boolean aturar = false;
 
-    public EncriptadorDesencriptador(String keyName) {
+    private int id;
+
+    public EncriptadorDesencriptador(int id, String keyName) {
         rsa = RSA.fromFile(keyName);
         nBytes = (rsa.keyLength()+2)/2;
-
+        this.id = id;
+        Main.getInstance().getFinestra().arrancar(id);
     }
 
 
@@ -39,12 +44,14 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
 
     @Override
     public void encriptar(int id, String filePath, String outPath, boolean comprimir) {
-        if(comprimir) {
-            System.err.println("TODO: comprimir");
-        }
 
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))){
             byte[] fileIn = bis.readAllBytes();
+
+            if(comprimir) {
+                System.err.println("TODO: comprimir");
+            }
+
             int _step = fileIn.length / N_THREADS;
             final int step = _step + 1 - (_step % N_THREADS);
             for (int i = 0; i < N_THREADS -1; i++) {
@@ -68,6 +75,7 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                 }
             }
 
+            Main.getInstance().finalitzar(id);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -75,8 +83,10 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
     }
 
     private void encriptar(byte[] file, int chunck, int ini, int fi){
+        Main.getInstance().getFinestra().arrancar(id);
+
         ArrayList<Byte> auxArr = new ArrayList<>();
-        for (int i = ini; i < fi; i++) {
+        for (int i = ini; i < fi && !aturar; i++) {
             byte b = file[i];
             int bb = b;
             if(bb < 0){
@@ -96,8 +106,19 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
         fileChunksOut[chunck] = auxArr;
     }
 
+    public boolean checkKey(String keyName, String filePath) {
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))){
+            byte[] header = bis.readNBytes(CryptHeader.tam);
+            RSA rsa = RSA.fromFile(keyName);
+            return CryptHeader.checkHeader(rsa, header);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void desencriptar(int id, String filePath, String outPath) throws CryptHeader.InvalidKeyHeader {
+        Main.getInstance().getFinestra().arrancar(id);
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))){
             byte[] fileIn = bis.readAllBytes();
             //check header
@@ -127,6 +148,8 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                 }
             }
 
+            Main.getInstance().finalitzar(id);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -142,7 +165,7 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
             fileChunksOut[chunck] = auxArr;
             return;
         }
-        for (int i = ini; i < fi; i+=nBytes) {
+        for (int i = ini; i < fi && !aturar; i+=nBytes) {
             byte[] aux = new byte[nBytes];
             for (int j = 0; j < nBytes; j++) {
                 aux[j] = file[i+j];
@@ -169,7 +192,7 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
 
     @Override
     public void aturar(int id) {
-        Comunicar.super.aturar(id);
+        aturar = true;
     }
 
 

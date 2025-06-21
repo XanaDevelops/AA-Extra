@@ -105,6 +105,7 @@
 package model.Huffman;
 
 import model.BitsManagement.BitInputStream;
+import model.CryptHeader;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -129,7 +130,7 @@ public class Decompressor {
         }
     }
 
-    public void decompressFile() throws IOException {
+    public void decompressFile() throws IOException, CryptHeader.InvalidKeyHeader {
         Path srcPath = Path.of(src);
         try (InputStream fis = new BufferedInputStream(Files.newInputStream(srcPath));
              DataInputStream dis = new DataInputStream(fis)) {
@@ -140,8 +141,7 @@ public class Decompressor {
 
             if (!Arrays.equals(extensionBytesComprimit,HuffHeader.magicNumbers)) {
                 System.err.println("Not a valid file");
-                //comunicar, etc, etc
-                return;
+                throw new CryptHeader.InvalidKeyHeader();
             }
 
             short tamWords = dis.readShort();
@@ -183,8 +183,7 @@ public class Decompressor {
                         boolean bit = bitIn.readBit();
                         node = bit ? node.right : node.left;
                     }
-                    //fosOut.write(node.symbol & 0xFF);
-                    //written++;
+
                     long aux = node.symbol;
                     for(int j = 0; j < tamWords && written < originalBytes; j++){
                         int bits = (int) ((aux & (0xFFL << (8*(tamWords-j-1)))) >> (8* (tamWords-j-1)));
@@ -192,7 +191,7 @@ public class Decompressor {
                         written++;
                     }
                     //DEBUG
-                    fosOut.flush();
+                    //fosOut.flush();
                 }
             }
         }

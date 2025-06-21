@@ -16,21 +16,21 @@ import java.util.TreeMap;
 public class Compressor {
     private final Huffman huffman;
     private final String inputPath;
-    private final String outputFolder;
+    private final String outputFile;
 
     private File outFile;
 
     private int id;
 
-    public Compressor(int id, String inputPath, String outputFolder) {
-        this(new Huffman(inputPath),  inputPath, outputFolder);
+    public Compressor(int id, String inputPath, String outputFile) {
+        this(new Huffman(inputPath),  inputPath, outputFile);
         this.id = id;
     }
-    public Compressor(Huffman huffman, String inputPath, String outputFolder) {
+    public Compressor(Huffman huffman, String inputPath, String outputFile) {
         this.huffman = huffman;
 
         this.inputPath = inputPath;
-        this.outputFolder = outputFolder;
+        this.outputFile = outputFile;
 
         this.id = 0;
     }
@@ -46,7 +46,7 @@ public class Compressor {
      */
 
     public void compressFile() throws IOException {
-        System.err.println("comprimint " + inputPath + " to " + outputFolder);
+        System.err.println("comprimint " + inputPath + " to " + outputFile);
         System.err.println("settings bytes: " + huffman.getByteSize());
 
         huffman.run();
@@ -68,11 +68,11 @@ public class Compressor {
         //afegir la signatura de l'extensió manualment
 
 
-        String fileName = Path.of(inputPath).getFileName().toString();
+        String fileName = Path.of(outputFile).getFileName().toString();
 
         fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-        outFile = new File(outputFolder + "/" + fileName + HuffHeader.EXTENSIO);
-        System.out.println("File: " + outFile);
+        outFile = new File(new File(outputFile).getParent() + "/" + fileName + HuffHeader.EXTENSIO);
+        System.out.println("COM File: " + outFile);
         try (OutputStream fos = Files.newOutputStream(Path.of(outFile.getAbsolutePath()));
              BufferedOutputStream bufOut = new BufferedOutputStream(fos);
              DataOutputStream dos = new DataOutputStream(bufOut);

@@ -52,15 +52,6 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))){
             byte[] fileIn = bis.readAllBytes();
 
-            if(comprimir) {
-                Path temp = Files.createTempDirectory("huff_temp");
-                Compressor c = new Compressor(id, filePath, temp.toString());
-                c.compressFile();
-                try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream((c.getFileOut())))){
-                    fileIn = bis2.readAllBytes();
-                }
-            }
-
             int _step = fileIn.length / N_THREADS;
             final int step = _step + 1 - (_step % N_THREADS);
             for (int i = 0; i < N_THREADS -1; i++) {
@@ -76,7 +67,21 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
             });
 
             waitAll();
-            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(outPath)))){
+
+            String oriOutPath = outPath;
+            if(comprimir) {
+                File temp = File.createTempFile("kri_temp", null);
+                outPath = temp.getAbsolutePath();
+
+                //Path temp = Files.createTempDirectory("huff_temp");
+//                Compressor c = new Compressor(id, filePath, temp.toString());
+//                c.compressFile();
+//                try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream((c.getFileOut())))){
+//                    fileIn = bis2.readAllBytes();
+//                }
+            }
+
+            try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outPath))){
                 byte[] header = CryptHeader.createHeader(rsa, comprimir);
                 bos.write(header);
                 for (ArrayList<Byte> chunk : fileChunksOut) {
@@ -84,6 +89,11 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                         bos.write(b);
                     }
                 }
+            }
+
+            if(comprimir) {
+                Compressor c = new Compressor(-1, outPath, oriOutPath);
+                c.compressFile();
             }
 
             Main.getInstance().finalitzar(id);
@@ -130,34 +140,37 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
     @Override
     public void desencriptar(int id, String filePath, String outPath) throws CryptHeader.InvalidKeyHeader {
         Main.getInstance().getFinestra().arrancar(id);
+
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))){
             byte[] fileIn = bis.readAllBytes();
             //check header
             if(!CryptHeader.checkHeader(rsa, fileIn)){
-                throw new CryptHeader.InvalidKeyHeader();
+                File temp = File.createTempFile("kri_temp", null);
+                Decompressor d = new Decompressor(filePath, temp.getAbsolutePath());
+                d.decompressFile();
+                try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream(temp))){
+                    fileIn = bis2.readAllBytes();
+                }
             }
 
             int _split = ((fileIn.length-CryptHeader.tam)/nBytes)/(N_THREADS);
             final int split = _split*nBytes;
             for (int i = 0; i < N_THREADS-1; i++) {
                 int j = i;
+                byte[] finalFileIn = fileIn;
                 addConcurrent(() -> {
-                    desencriptar(fileIn, j, j * split, (j+1) * split);
+                    desencriptar(finalFileIn, j, j * split, (j+1) * split);
                 });
             }
+            byte[] finalFileIn1 = fileIn;
             addConcurrent(() -> {
-                desencriptar(fileIn, N_THREADS-1, (N_THREADS-1) * split, fileIn.length - CryptHeader.tam);
+                desencriptar(finalFileIn1, N_THREADS-1, (N_THREADS-1) * split, finalFileIn1.length - CryptHeader.tam);
             });
 
             waitAll();
 
             String oriOutPath = outPath;
-            if(CryptHeader.isCompressed(fileIn)) {
-                File temp = File.createTempFile("huff_temp", null);
-                //temp.deleteOnExit();
-                outPath = temp.getAbsolutePath();
-                System.out.println("temp ED dec: " + temp.getAbsolutePath());
-            }
+
 
 
             try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(outPath)))){
@@ -168,10 +181,7 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                 }
             }
 
-            if(CryptHeader.isCompressed(fileIn)) {
-                Decompressor d = new Decompressor(outPath, oriOutPath);
-                d.decompressFile();
-            }
+
 
             Main.getInstance().finalitzar(id);
 

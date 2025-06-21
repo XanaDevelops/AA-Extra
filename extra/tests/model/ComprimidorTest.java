@@ -25,7 +25,7 @@ class ComprimidorTest {
     }
 
     @Test
-    void testCompresor() throws IOException {
+    void testCompresor() throws IOException, CryptHeader.InvalidKeyHeader {
         String fileName = "tests/res/testABC.txt";
 
         String outputFolder = "tests/res/";
@@ -42,7 +42,7 @@ class ComprimidorTest {
         assertArrayEquals(a, b);
     }
     @Test
-    void testCompresorBig() throws IOException {
+    void testCompresorBig() throws IOException, CryptHeader.InvalidKeyHeader {
         String fileName = "tests/res/big.txt";
 
         String outputFolder = "tests/res/";

@@ -69,7 +69,7 @@ class EncriptadorDesencriptadorTest {
     void testEncriptador3() throws CryptHeader.InvalidKeyHeader, FileNotFoundException {
         String fileOri = "testsRes/test0.txt";
         String fileDes = "testsRes/test0_dec_c.txt";
-        String fileCry = "testsRes/test0_c.kri";
+        String fileCry = "testsRes/test0_c.krib";
         encriptador.encriptar(-1, fileOri, fileCry, true);
         EncriptadorDesencriptador encriptador2 = new EncriptadorDesencriptador(-1, "TEST_CLAU");
         encriptador2.desencriptar(-1, fileCry, fileDes);
@@ -88,7 +88,7 @@ class EncriptadorDesencriptadorTest {
     void testEncriptador4() throws CryptHeader.InvalidKeyHeader, FileNotFoundException {
         String fileOri = "testsRes/luigi gana.jpg";
         String fileDes = "testsRes/luigi gana dec_c.jpg";
-        String fileCry = "testsRes/fotoL_c.kri";
+        String fileCry = "testsRes/fotoL_c.krib";
         encriptador.encriptar(-1, fileOri, fileCry, true);
         EncriptadorDesencriptador encriptador2 = new EncriptadorDesencriptador(-1, "TEST_CLAU");
         encriptador2.desencriptar(-1, fileCry, fileDes);

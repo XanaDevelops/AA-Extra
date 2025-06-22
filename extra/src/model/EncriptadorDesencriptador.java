@@ -79,12 +79,6 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                 File temp = File.createTempFile("kri_temp", null);
                 outPath = temp.getAbsolutePath();
 
-                //Path temp = Files.createTempDirectory("huff_temp");
-//                Compressor c = new Compressor(id, filePath, temp.toString());
-//                c.compressFile();
-//                try(BufferedInputStream bis2 = new BufferedInputStream(new FileInputStream((c.getFileOut())))){
-//                    fileIn = bis2.readAllBytes();
-//                }
             }
 
             try(BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outPath))){
@@ -151,10 +145,7 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
             byte[] fileIn = bis.readAllBytes();
             //check header
             if(!CryptHeader.checkHeader(rsa, fileIn)){
-                if(rsa != null){
-                    System.err.println("rsa no es null -> no comp. pero no key!");
-                    throw new CryptHeader.InvalidKeyHeader();
-                }
+
                 File temp = File.createTempFile("kri_temp", null);
                 Decompressor d = new Decompressor(filePath, temp.getAbsolutePath());
                 d.decompressFile();
@@ -173,6 +164,11 @@ public class EncriptadorDesencriptador implements Runnable, Comunicar {
                     }
                     if(!ok){
                         System.err.println("no ok despres de descomprimir");
+                        throw new CryptHeader.InvalidKeyHeader();
+                    }
+                }else {
+                    if (!CryptHeader.checkHeader(rsa, fileIn)) {
+                        System.err.println("rsa no es null -> no comp. pero no key!");
                         throw new CryptHeader.InvalidKeyHeader();
                     }
                 }
